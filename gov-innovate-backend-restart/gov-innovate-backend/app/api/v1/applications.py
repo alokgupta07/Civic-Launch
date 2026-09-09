@@ -41,10 +41,15 @@ def create_application(
         raise HTTPException(status_code=404, detail="Challenge not found")
 
     application = Application(
-        challenge_id=payload.challenge_id,
-        startup_id=current_user.id,
-        proposal=payload.proposal,
-    )
+    challenge_id=payload.challenge_id,
+    startup_id=current_user.id,
+    proposal=payload.proposal,
+    technology_approach=payload.technology_approach,
+    expected_impact=payload.expected_impact,
+    team_details=payload.team_details,
+    estimated_budget=payload.estimated_budget,
+    pilot_plan=payload.pilot_plan,
+)
     db.add(application)
     db.commit()
     db.refresh(application)

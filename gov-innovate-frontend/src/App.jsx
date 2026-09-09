@@ -1232,33 +1232,63 @@ function FormField({ label, placeholder, textarea, isSelect, options, full, read
 function StartupPortalPage({ onNavigate, challenges = CHALLENGES, role }) {
   const [applyTarget, setApplyTarget] = useState(null); // challenge object or null
   const [proposal, setProposal] = useState("");
+  const [technologyApproach, setTechnologyApproach] = useState("");
+const [expectedImpact, setExpectedImpact] = useState("");
+const [teamDetails, setTeamDetails] = useState("");
+const [estimatedBudget, setEstimatedBudget] = useState("");
+const [pilotPlan, setPilotPlan] = useState("");
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState("");
   const [appliedIds, setAppliedIds] = useState(new Set());
+  useEffect(() => {
+  api.getApplications()
+    .then((apps) => {
+      setAppliedIds(new Set(apps.map((app) => app.challenge_id)));
+    })
+    .catch((err) => {
+      console.error("Failed to load applications:", err);
+    });
+}, []);
 
-  const openApply = (challenge) => {
-    if (role !== "startup") {
-      onNavigate("startupAuth");
-      return;
-    }
-    setApplyTarget(challenge);
-    setProposal("");
-    setApplyError("");
-  };
+ const openApply = (challenge) => {
+  if (role !== "startup") {
+    onNavigate("startupAuth");
+    return;
+  }
 
-  const submitApplication = async () => {
-    setApplying(true);
-    setApplyError("");
-    try {
-      await api.applyToChallenge(applyTarget.dbId, proposal);
-      setAppliedIds((prev) => new Set(prev).add(applyTarget.dbId));
-      setApplyTarget(null);
-    } catch (err) {
-      setApplyError(err.message || "Could not submit application");
-    } finally {
-      setApplying(false);
-    }
-  };
+  setApplyTarget(challenge);
+
+  setProposal("");
+  setTechnologyApproach("");
+  setExpectedImpact("");
+  setTeamDetails("");
+  setEstimatedBudget("");
+  setPilotPlan("");
+
+  setApplyError("");
+};
+ const submitApplication = async () => {
+  setApplying(true);
+  setApplyError("");
+
+  try {
+    await api.applyToChallenge(applyTarget.dbId, {
+      proposal,
+      technology_approach: technologyApproach,
+      expected_impact: expectedImpact,
+      team_details: teamDetails,
+      estimated_budget: estimatedBudget,
+      pilot_plan: pilotPlan,
+    });
+
+    setAppliedIds((prev) => new Set(prev).add(applyTarget.dbId));
+    setApplyTarget(null);
+  } catch (err) {
+    setApplyError(err.message || "Could not submit application");
+  } finally {
+    setApplying(false);
+  }
+};
 
   return (
     <div className="page">
@@ -1309,29 +1339,89 @@ function StartupPortalPage({ onNavigate, challenges = CHALLENGES, role }) {
         </div>
       </div>
 
-      {applyTarget && (
-        <Modal
-          title={`Apply — ${applyTarget.title}`}
-          onClose={() => setApplyTarget(null)}
-          onConfirm={submitApplication}
-          confirmLabel={applying ? "Submitting…" : "Submit Application"}
-        >
-          <p className="muted" style={{ marginBottom: 12 }}>
-            Challenge {applyTarget.id} · {applyTarget.department}
-          </p>
-          <div className="field field--full">
-            <label className="field__label">Your Proposal</label>
-            <textarea
-              className="field__input field__textarea"
-              placeholder="Briefly describe your solution, technology, and why it fits this challenge…"
-              value={proposal}
-              onChange={(e) => setProposal(e.target.value)}
-              autoFocus
-            />
-          </div>
-          {applyError && <div className="info-callout info-callout--warn" style={{ marginTop: 10 }}>{applyError}</div>}
-        </Modal>
-      )}
+    {applyTarget && (
+  <Modal
+    title={`Apply — ${applyTarget.title}`}
+    onClose={() => setApplyTarget(null)}
+    onConfirm={submitApplication}
+    confirmLabel={applying ? "Submitting…" : "Submit Application"}
+  >
+    <p className="muted" style={{ marginBottom: 16 }}>
+      Challenge {applyTarget.id} · {applyTarget.department}
+    </p>
+
+    <div className="field field--full">
+      <label className="field__label">Solution Proposal</label>
+      <textarea
+        className="field__input field__textarea"
+        placeholder="Describe your proposed solution and how it addresses this challenge..."
+        value={proposal}
+        onChange={(e) => setProposal(e.target.value)}
+        autoFocus
+      />
+    </div>
+
+    <div className="field field--full">
+      <label className="field__label">Technology & Approach</label>
+      <textarea
+        className="field__input field__textarea"
+        placeholder="Mention your technology stack, architecture and implementation approach..."
+        value={technologyApproach}
+        onChange={(e) => setTechnologyApproach(e.target.value)}
+      />
+    </div>
+
+    <div className="field field--full">
+      <label className="field__label">Expected Impact</label>
+      <textarea
+        className="field__input field__textarea"
+        placeholder="Explain the expected outcomes, benefits and measurable impact..."
+        value={expectedImpact}
+        onChange={(e) => setExpectedImpact(e.target.value)}
+      />
+    </div>
+
+    <div className="field field--full">
+      <label className="field__label">Team Details</label>
+      <textarea
+        className="field__input field__textarea"
+        placeholder="Mention team size, roles and relevant expertise..."
+        value={teamDetails}
+        onChange={(e) => setTeamDetails(e.target.value)}
+      />
+    </div>
+
+    <div className="field field--full">
+      <label className="field__label">Estimated Budget</label>
+      <input
+        className="field__input"
+        type="text"
+        placeholder="Example: ₹5,00,000"
+        value={estimatedBudget}
+        onChange={(e) => setEstimatedBudget(e.target.value)}
+      />
+    </div>
+
+    <div className="field field--full">
+      <label className="field__label">Pilot Implementation Plan</label>
+      <textarea
+        className="field__input field__textarea"
+        placeholder="Explain how you would implement and test the solution during the pilot..."
+        value={pilotPlan}
+        onChange={(e) => setPilotPlan(e.target.value)}
+      />
+    </div>
+
+    {applyError && (
+      <div
+        className="info-callout info-callout--warn"
+        style={{ marginTop: 10 }}
+      >
+        {applyError}
+      </div>
+    )}
+  </Modal>
+)}
     </div>
   );
 }
@@ -2119,11 +2209,25 @@ export default function App() {
         .audit-item__action { font-size: 12.5px; color: #4B5563; }
  
         .modal-overlay { position: fixed; inset: 0; background: rgba(18,59,99,0.45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
-        .modal-box { background: var(--white); border-radius: 6px; width: 440px; max-width: 100%; }
+        .modal-box {
+  background: var(--white);
+  border-radius: 6px;
+  width: 440px;
+  max-width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
         .modal-box__header { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--border); }
         .modal-box__header h3 { margin: 0; font-size: 15px; color: var(--gov-blue); }
         .modal-box__close { background: none; border: none; font-size: 20px; color: #6B7280; line-height: 1; }
-        .modal-box__body { padding: 18px; font-size: 13.5px; color: #4B5563; }
+       .modal-box__body {
+  padding: 18px;
+  font-size: 13.5px;
+  color: #4B5563;
+  overflow-y: auto;
+  flex: 1;
+}
         .modal-box__footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
  
         .notif-panel { position: absolute; right: 0; top: calc(100% + 8px); width: 300px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 8px 24px rgba(18,59,99,0.15); z-index: 40; }

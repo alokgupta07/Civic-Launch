@@ -112,12 +112,24 @@ export async function getApplications(challengeId) {
   return handle(res);
 }
 
-export async function applyToChallenge(challengeId, proposal) {
+export async function applyToChallenge(challengeId, applicationData) {
   const res = await fetch(`${API_BASE}/applications`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify({ challenge_id: challengeId, proposal }),
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify({
+      challenge_id: challengeId,
+      proposal: applicationData.proposal,
+      technology_approach: applicationData.technology_approach,
+      expected_impact: applicationData.expected_impact,
+      team_details: applicationData.team_details,
+      estimated_budget: applicationData.estimated_budget,
+      pilot_plan: applicationData.pilot_plan,
+    }),
   });
+
   return handle(res);
 }
 
