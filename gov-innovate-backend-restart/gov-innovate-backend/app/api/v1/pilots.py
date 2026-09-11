@@ -6,7 +6,12 @@ from app.core.database import get_db
 from app.models.application import Application
 from app.models.pilot import Pilot
 from app.models.user import User, UserRole
-from app.schemas.pilot_schema import PilotAnalyticsResponse, PilotCreate, PilotResponse
+from app.schemas.pilot_schema import (
+    PilotAnalyticsResponse,
+    PilotCreate,
+    PilotUpdate,
+    PilotResponse,
+)
 
 router = APIRouter(prefix="/pilots", tags=["pilots"])
 
@@ -42,7 +47,30 @@ def create_pilot(
     db.commit()
     db.refresh(pilot)
     return pilot
+@router.patch("/{pilot_id}", response_model=PilotResponse)
+def update_pilot(
+    pilot_id: int,
+    payload: PilotUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(UserRole.government, UserRole.admin)
+    ),
+):
+    pilot = db.query(Pilot).filter(Pilot.id == pilot_id).first()
 
+    if not pilot:
+        raise HTTPException(
+            status_code=404,
+            detail="Pilot not found"
+        )
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(pilot, field, value)
+
+    db.commit()
+    db.refresh(pilot)
+
+    return pilot
 
 @router.get("/{pilot_id}/analytics", response_model=PilotAnalyticsResponse)
 def pilot_analytics(pilot_id: int, db: Session = Depends(get_db)):
