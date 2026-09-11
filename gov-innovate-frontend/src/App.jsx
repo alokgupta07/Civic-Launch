@@ -1,15 +1,15 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import * as api from "./api";
- 
+
 /* ============================================================
    GovInnovate — Government Innovation & Startup Platform
    Prototype | Smart India Hackathon 2026
    NOT an official Government of India website.
    ============================================================ */
- 
+
 /* ---------------- Dummy Data ---------------- */
- 
+
 const CHALLENGES = [
   { id: "GC-2026-014", title: "AI-Based Crop Disease Detection for Small Farmers", department: "Ministry of Agriculture & Farmers Welfare", applications: 62, stage: "EVALUATION", deadline: "15 Oct 2026", status: "EVALUATION" },
   { id: "GC-2026-021", title: "Smart Waste Segregation System for Urban Local Bodies", department: "Ministry of Housing & Urban Affairs", applications: 48, stage: "PUBLISHED", deadline: "30 Oct 2026", status: "PUBLISHED" },
@@ -19,7 +19,7 @@ const CHALLENGES = [
   { id: "GC-2025-071", title: "Blockchain-Based Land Record Verification", department: "Dept. of Land Resources", applications: 55, stage: "COMPLETED", deadline: "01 Mar 2026", status: "COMPLETED" },
   { id: "GC-2026-030", title: "Solar-Powered Cold Storage for Farm Produce", department: "Ministry of Food Processing Industries", applications: 0, stage: "DRAFT", deadline: "TBD", status: "DRAFT" },
 ];
- 
+
 const STARTUPS = [
   { rank: 1, name: "AgroSense Technologies Pvt. Ltd.", eligibility: "ELIGIBLE", technical: 88, innovation: 91, cost: 78, impact: 85, total: 85.5, evalStatus: "COMPLETED", decision: "SHORTLIST" },
   { rank: 2, name: "KrishiMitra Innovations", eligibility: "ELIGIBLE", technical: 82, innovation: 84, cost: 80, impact: 83, total: 82.3, evalStatus: "COMPLETED", decision: "SHORTLIST" },
@@ -27,23 +27,23 @@ const STARTUPS = [
   { rank: 4, name: "GreenField Analytics", eligibility: "ELIGIBLE", technical: 70, innovation: 68, cost: 72, impact: 69, total: 69.7, evalStatus: "IN PROGRESS", decision: "PENDING" },
   { rank: 5, name: "RuralTech Solutions", eligibility: "NOT ELIGIBLE", technical: "-", innovation: "-", cost: "-", impact: "-", total: "-", evalStatus: "NOT STARTED", decision: "REJECT" },
 ];
- 
+
 const PROCUREMENT_ITEMS = [
   { startup: "CivicWaste Systems", solution: "Smart Waste Segregation System", pilotStatus: "Pilot Completed", performance: "92% target achieved", cost: "₹1.8 Cr (est.)", recommendation: "Procurement Recommended", status: "Under Review" },
   { startup: "PowerGuard Analytics", solution: "Predictive Maintenance Platform", pilotStatus: "Pilot Completed", performance: "88% target achieved", cost: "₹3.2 Cr (est.)", recommendation: "Procurement Recommended", status: "Approved" },
   { startup: "AquaCheck Devices", solution: "Water Quality Monitoring Kit", pilotStatus: "Pilot In Progress", performance: "Monitoring ongoing", cost: "₹95 Lakh (est.)", recommendation: "Pending Pilot Completion", status: "Under Review" },
   { startup: "LandChain Systems", solution: "Land Record Verification Platform", pilotStatus: "Pilot Completed", performance: "97% target achieved", cost: "₹2.1 Cr (est.)", recommendation: "Procurement Recommended", status: "Completed" },
 ];
- 
+
 const AUDIT_LOG = [
   { date: "28 Aug 2026, 11:42 AM", actor: "Dr. R. Sharma (Evaluator)", action: "Submitted technical evaluation for AgroSense Technologies Pvt. Ltd." },
   { date: "27 Aug 2026, 04:15 PM", actor: "Ms. A. Iyer (Evaluator)", action: "Submitted innovation evaluation for KrishiMitra Innovations." },
   { date: "25 Aug 2026, 02:03 PM", actor: "System", action: "Challenge GC-2026-014 moved to Evaluation stage." },
   { date: "20 Aug 2026, 09:30 AM", actor: "Dept. Nodal Officer", action: "Published Challenge GC-2026-014." },
 ];
- 
+
 /* ---------------- Small shared bits ---------------- */
- 
+
 const STATUS_STYLES = {
   DRAFT: { bg: "#EEF1F4", color: "#4B5563", border: "#D9E1E8" },
   PUBLISHED: { bg: "#E8F1FB", color: "#1B5E9E", border: "#BBD6EE" },
@@ -58,7 +58,7 @@ const STATUS_STYLES = {
   Completed: { bg: "#E8F6EC", color: "#0E6B31", border: "#B9E3C6" },
   "Under Review": { bg: "#FDF1E4", color: "#B4620C", border: "#F3D5AE" },
 };
- 
+
 function StatusBadge({ status }) {
   const s = STATUS_STYLES[status] || { bg: "#EEF1F4", color: "#374151", border: "#D9E1E8" };
   return (
@@ -80,7 +80,7 @@ function StatusBadge({ status }) {
     </span>
   );
 }
- 
+
 function StatCard({ label, value, sub, tone }) {
   return (
     <div className="stat-card" style={tone ? { borderTop: `3px solid ${tone}` } : undefined}>
@@ -90,7 +90,7 @@ function StatCard({ label, value, sub, tone }) {
     </div>
   );
 }
- 
+
 function Breadcrumb({ items }) {
   return (
     <nav className="breadcrumb" aria-label="Breadcrumb">
@@ -107,7 +107,7 @@ function Breadcrumb({ items }) {
     </nav>
   );
 }
- 
+
 function SectionHeading({ eyebrow, title, desc }) {
   return (
     <div className="section-heading">
@@ -117,7 +117,7 @@ function SectionHeading({ eyebrow, title, desc }) {
     </div>
   );
 }
- 
+
 function DataTable({ columns, children }) {
   return (
     <div className="data-table-wrap">
@@ -134,7 +134,7 @@ function DataTable({ columns, children }) {
     </div>
   );
 }
- 
+
 function Modal({ title, children, onClose, onConfirm, confirmLabel = "Confirm" }) {
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true">
@@ -152,7 +152,7 @@ function Modal({ title, children, onClose, onConfirm, confirmLabel = "Confirm" }
     </div>
   );
 }
- 
+
 function Notification({ notifications, onClose }) {
   return (
     <div className="notif-panel" role="dialog" aria-label="Notifications">
@@ -172,9 +172,9 @@ function Notification({ notifications, onClose }) {
     </div>
   );
 }
- 
+
 /* ---------------- Layout: Utility bar / Header / Nav / Sidebar / Footer ---------------- */
- 
+
 function TopUtilityBar({ lang, setLang, fontScale, setFontScale, backendStatus }) {
   return (
     <div className="utility-bar">
@@ -227,7 +227,7 @@ function TopUtilityBar({ lang, setLang, fontScale, setFontScale, backendStatus }
     </div>
   );
 }
- 
+
 /** Shared login/register form used by both auth pages, styled per audience. */
 function AuthForm({ audience, roleOptions, onAuthed }) {
   const [mode, setMode] = useState("login"); // "login" | "register"
@@ -366,7 +366,7 @@ function Header({ role, currentUser, onNavigate, onLogout, notifOpen, setNotifOp
             <div className="site-header__strap">From Government Challenges to Real-World Solutions</div>
           </div>
         </button>
- 
+
         <div className="site-header__actions">
           <button className="header-icon-btn" title="Help">
             <span className="header-icon-btn__glyph">?</span>
@@ -380,7 +380,7 @@ function Header({ role, currentUser, onNavigate, onLogout, notifOpen, setNotifOp
             </button>
             {notifOpen && <Notification notifications={notifications} onClose={() => setNotifOpen(false)} />}
           </div>
- 
+
           {role === "guest" ? (
             <div className="login-group">
               <button className="btn btn--outline btn--sm" onClick={() => onNavigate("govAuth")}>Government Login</button>
@@ -405,7 +405,7 @@ function Header({ role, currentUser, onNavigate, onLogout, notifOpen, setNotifOp
     </header>
   );
 }
- 
+
 const PUBLIC_NAV = [
   { key: "home", label: "Home" },
   { key: "about", label: "About Platform" },
@@ -416,7 +416,7 @@ const PUBLIC_NAV = [
   { key: "reports", label: "Reports" },
   { key: "contact", label: "Contact" },
 ];
- 
+
 function MainNav({ current, onNavigate }) {
   return (
     <nav className="main-nav">
@@ -434,7 +434,7 @@ function MainNav({ current, onNavigate }) {
     </nav>
   );
 }
- 
+
 const GOV_SIDEBAR = [
   { key: "govDashboard", label: "Dashboard" },
   { key: "createChallenge", label: "Create Challenge" },
@@ -475,7 +475,7 @@ function Sidebar({ role, current, onNavigate }) {
     </aside>
   );
 }
- 
+
 function Footer() {
   return (
     <footer className="site-footer">
@@ -511,9 +511,9 @@ function Footer() {
     </footer>
   );
 }
- 
+
 /* ---------------- Pages ---------------- */
- 
+
 function HomePage({ onNavigate, challenges = CHALLENGES }) {
   return (
     <div>
@@ -542,7 +542,7 @@ function HomePage({ onNavigate, challenges = CHALLENGES }) {
           </div>
         </div>
       </section>
- 
+
       <section className="stats-strip">
         <div className="stats-strip__inner">
           <StatCard label="Active Government Challenges" value="46" />
@@ -552,7 +552,7 @@ function HomePage({ onNavigate, challenges = CHALLENGES }) {
           <StatCard label="Procurement Recommendations" value="21" />
         </div>
       </section>
- 
+
       <section className="content-section">
         <SectionHeading
           eyebrow="How it works"
@@ -575,7 +575,7 @@ function HomePage({ onNavigate, challenges = CHALLENGES }) {
           ))}
         </div>
       </section>
- 
+
       <section className="content-section content-section--muted">
         <SectionHeading eyebrow="Open Opportunities" title="Recently Published Challenges" />
         <DataTable columns={["Challenge ID", "Title", "Department", "Applications", "Stage", "Deadline"]}>
@@ -594,8 +594,41 @@ function HomePage({ onNavigate, challenges = CHALLENGES }) {
     </div>
   );
 }
- 
+
 function GovDashboardPage({ onNavigate, openPublishModal, challenges = CHALLENGES }) {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getApplications()
+      .then((apps) => {
+        setApplications(apps);
+      })
+      .catch((err) => {
+        console.error("Failed to load government applications:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const applicationsReceived = applications.length;
+
+  const underEvaluationCount = applications.filter(
+    (app) => app.status === "UNDER_REVIEW"
+  ).length;
+
+  const shortlistedCount = applications.filter(
+    (app) => app.status === "SHORTLISTED"
+  ).length;
+
+  const activePilotsCount = applications.filter(
+    (app) => app.status === "PILOT"
+  ).length;
+
+  const procurementReadyCount = applications.filter(
+    (app) => app.status === "PROCUREMENT"
+  ).length;
   return (
     <div className="page">
       <Breadcrumb items={["Home", "Government Dashboard"]} />
@@ -611,17 +644,37 @@ function GovDashboardPage({ onNavigate, openPublishModal, challenges = CHALLENGE
         </div>
         <button className="btn btn--primary" onClick={() => onNavigate("createChallenge")}>+ Create New Challenge</button>
       </div>
- 
+
       <div className="stat-grid">
         <StatCard label="Active Challenges" value="6" tone="#123B63" />
-        <StatCard label="Applications Received" value="272" tone="#1B5E9E" />
+        <StatCard
+          label="Applications Received"
+          value={loading ? "..." : String(applicationsReceived)}
+          tone="#1B5E9E"
+        />
         <StatCard label="Eligible Startups" value="204" tone="#1B5E9E" />
-        <StatCard label="Under Evaluation" value="62" tone="#E67E22" />
-        <StatCard label="Shortlisted Startups" value="37" tone="#16803C" />
-        <StatCard label="Active Pilots" value="9" tone="#16803C" />
-        <StatCard label="Procurement Ready" value="4" tone="#123B63" />
+        <StatCard
+          label="Under Evaluation"
+          value={loading ? "..." : String(underEvaluationCount)}
+          tone="#E67E22"
+        />
+        <StatCard
+          label="Shortlisted Startups"
+          value={loading ? "..." : String(shortlistedCount)}
+          tone="#16803C"
+        />
+        <StatCard
+          label="Active Pilots"
+          value={loading ? "..." : String(activePilotsCount)}
+          tone="#16803C"
+        />
+        <StatCard
+          label="Procurement Ready"
+          value={loading ? "..." : String(procurementReadyCount)}
+          tone="#123B63"
+        />
       </div>
- 
+
       <div className="panel">
         <div className="panel__header">
           <h2>Active Challenges</h2>
@@ -645,32 +698,32 @@ function GovDashboardPage({ onNavigate, openPublishModal, challenges = CHALLENGE
     </div>
   );
 }
- 
+
 const STEPS = ["Challenge Details", "Eligibility", "Evaluation Criteria", "Timeline", "Review", "Publish"];
- 
+
 function CreateChallengePage({ onPublished }) {
   const [step, setStep] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [published, setPublished] = useState(false);
-const [savingDraft, setSavingDraft] = useState(false);
-const [draftMessage, setDraftMessage] = useState("");
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftMessage, setDraftMessage] = useState("");
   const [publishError, setPublishError] = useState("");
   const [publishing, setPublishing] = useState(false);
- const [form, setForm] = useState({
-  title: "",
-  department: "",
-  description: "",
-  expectedOutcome: "",
-  technicalRequirements: "",
-  eligibilityCriteria: "",
-  minimumTeamSize: "",
-  sectorFocus: "",
-  evaluationCriteria: "",
-  procurementValue: "",
-  deadline: "",
-  pilotRequirements: "",
-});
+  const [form, setForm] = useState({
+    title: "",
+    department: "",
+    description: "",
+    expectedOutcome: "",
+    technicalRequirements: "",
+    eligibilityCriteria: "",
+    minimumTeamSize: "",
+    sectorFocus: "",
+    evaluationCriteria: "",
+    procurementValue: "",
+    deadline: "",
+    pilotRequirements: "",
+  });
   const [challengeCode] = useState(
     () => `GC-2026-${String(Math.floor(100 + Math.random() * 900))}`
   );
@@ -678,130 +731,130 @@ const [draftMessage, setDraftMessage] = useState("");
 
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
-const handleSaveDraft = async () => {
-  setSavingDraft(true);
-  setDraftMessage("");
-  setPublishError("");
+  const handleSaveDraft = async () => {
+    setSavingDraft(true);
+    setDraftMessage("");
+    setPublishError("");
 
-  const payload = {
-    challenge_code: challengeCode,
-    title: form.title || "Untitled Challenge",
-    department:
-      form.department ||
-      "Ministry of Agriculture & Farmers Welfare",
+    const payload = {
+      challenge_code: challengeCode,
+      title: form.title || "Untitled Challenge",
+      department:
+        form.department ||
+        "Ministry of Agriculture & Farmers Welfare",
 
-    description: form.description || undefined,
-    expected_outcome: form.expectedOutcome || undefined,
-    technical_requirements:
-      form.technicalRequirements || undefined,
-    eligibility_criteria:
-      form.eligibilityCriteria || undefined,
+      description: form.description || undefined,
+      expected_outcome: form.expectedOutcome || undefined,
+      technical_requirements:
+        form.technicalRequirements || undefined,
+      eligibility_criteria:
+        form.eligibilityCriteria || undefined,
 
-    minimum_team_size: form.minimumTeamSize
-      ? Number(form.minimumTeamSize)
-      : undefined,
+      minimum_team_size: form.minimumTeamSize
+        ? Number(form.minimumTeamSize)
+        : undefined,
 
-    sector_focus: form.sectorFocus || undefined,
-    evaluation_criteria:
-      form.evaluationCriteria || undefined,
-    procurement_value:
-      form.procurementValue || undefined,
-    deadline: form.deadline || undefined,
-    pilot_requirements:
-      form.pilotRequirements || undefined,
+      sector_focus: form.sectorFocus || undefined,
+      evaluation_criteria:
+        form.evaluationCriteria || undefined,
+      procurement_value:
+        form.procurementValue || undefined,
+      deadline: form.deadline || undefined,
+      pilot_requirements:
+        form.pilotRequirements || undefined,
 
-    status: "DRAFT",
-  };
+      status: "DRAFT",
+    };
 
-  try {
-    let savedChallenge;
+    try {
+      let savedChallenge;
 
-    if (draftId) {
-      savedChallenge = await api.updateChallenge(
-        draftId,
-        payload
+      if (draftId) {
+        savedChallenge = await api.updateChallenge(
+          draftId,
+          payload
+        );
+      } else {
+        savedChallenge = await api.createChallenge(payload);
+        setDraftId(savedChallenge.id);
+      }
+
+      setDraftMessage(
+        "Challenge draft saved successfully."
       );
-    } else {
-      savedChallenge = await api.createChallenge(payload);
-      setDraftId(savedChallenge.id);
+    } catch (err) {
+      setDraftMessage(
+        `Could not save draft: ${err.message}`
+      );
+    } finally {
+      setSavingDraft(false);
     }
-
-    setDraftMessage(
-      "Challenge draft saved successfully."
-    );
-  } catch (err) {
-    setDraftMessage(
-      `Could not save draft: ${err.message}`
-    );
-  } finally {
-    setSavingDraft(false);
-  }
-};
-const handlePublish = async () => {
-  setShowConfirm(false);
-  setPublishing(true);
-  setPublishError("");
-
-  const payload = {
-    challenge_code: challengeCode,
-    title: form.title || "Untitled Challenge",
-    department:
-      form.department ||
-      "Ministry of Agriculture & Farmers Welfare",
-
-    description: form.description || undefined,
-    expected_outcome: form.expectedOutcome || undefined,
-    technical_requirements:
-      form.technicalRequirements || undefined,
-    eligibility_criteria:
-      form.eligibilityCriteria || undefined,
-
-    minimum_team_size: form.minimumTeamSize
-      ? Number(form.minimumTeamSize)
-      : undefined,
-
-    sector_focus: form.sectorFocus || undefined,
-    evaluation_criteria:
-      form.evaluationCriteria || undefined,
-    procurement_value:
-      form.procurementValue || undefined,
-    deadline: form.deadline || undefined,
-    pilot_requirements:
-      form.pilotRequirements || undefined,
-
-    status: "PUBLISHED",
   };
+  const handlePublish = async () => {
+    setShowConfirm(false);
+    setPublishing(true);
+    setPublishError("");
 
-  try {
-    if (draftId) {
-      // Existing draft ko publish karo
-      await api.updateChallenge(draftId, payload);
-    } else {
-      // Draft save nahi hua tha, directly new challenge create karo
-      await api.createChallenge(payload);
+    const payload = {
+      challenge_code: challengeCode,
+      title: form.title || "Untitled Challenge",
+      department:
+        form.department ||
+        "Ministry of Agriculture & Farmers Welfare",
+
+      description: form.description || undefined,
+      expected_outcome: form.expectedOutcome || undefined,
+      technical_requirements:
+        form.technicalRequirements || undefined,
+      eligibility_criteria:
+        form.eligibilityCriteria || undefined,
+
+      minimum_team_size: form.minimumTeamSize
+        ? Number(form.minimumTeamSize)
+        : undefined,
+
+      sector_focus: form.sectorFocus || undefined,
+      evaluation_criteria:
+        form.evaluationCriteria || undefined,
+      procurement_value:
+        form.procurementValue || undefined,
+      deadline: form.deadline || undefined,
+      pilot_requirements:
+        form.pilotRequirements || undefined,
+
+      status: "PUBLISHED",
+    };
+
+    try {
+      if (draftId) {
+        // Existing draft ko publish karo
+        await api.updateChallenge(draftId, payload);
+      } else {
+        // Draft save nahi hua tha, directly new challenge create karo
+        await api.createChallenge(payload);
+      }
+
+      setPublished(true);
+
+      if (onPublished) {
+        onPublished();
+      }
+    } catch (err) {
+      setPublishError(
+        err.message === "Not authenticated" ||
+          err.message?.includes("permission")
+          ? "You need to be logged in as Government to publish a challenge. Use 'Government Login' in the top right, then try again."
+          : `Could not publish: ${err.message}`
+      );
+    } finally {
+      setPublishing(false);
     }
-
-    setPublished(true);
-
-    if (onPublished) {
-      onPublished();
-    }
-  } catch (err) {
-    setPublishError(
-      err.message === "Not authenticated" ||
-      err.message?.includes("permission")
-        ? "You need to be logged in as Government to publish a challenge. Use 'Government Login' in the top right, then try again."
-        : `Could not publish: ${err.message}`
-    );
-  } finally {
-    setPublishing(false);
-  }
-};
+  };
   return (
     <div className="page">
       <Breadcrumb items={["Home", "Government Dashboard", "Create Challenge"]} />
       <h1 className="page-title">Create Government Challenge</h1>
- 
+
       <div className="stepper">
         {STEPS.map((label, i) => (
           <div key={label} className={`stepper__step ${i === step ? "is-active" : i < step ? "is-done" : ""}`}>
@@ -810,16 +863,16 @@ const handlePublish = async () => {
           </div>
         ))}
       </div>
- 
+
       <div className="panel">
         {draftMessage && (
-  <div
-    className="info-callout"
-    style={{ marginBottom: 16 }}
-  >
-    {draftMessage}
-  </div>
-)}
+          <div
+            className="info-callout"
+            style={{ marginBottom: 16 }}
+          >
+            {draftMessage}
+          </div>
+        )}
         {step === 0 && (
           <div className="form-grid">
             <FormField label="Challenge ID" value={challengeCode} readOnly />
@@ -846,215 +899,215 @@ const handlePublish = async () => {
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             />
-<FormField
-  label="Expected Outcome"
-  textarea
-  placeholder="Describe the expected outcome of a successful solution"
-  full
-  value={form.expectedOutcome}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      expectedOutcome: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Expected Outcome"
+              textarea
+              placeholder="Describe the expected outcome of a successful solution"
+              full
+              value={form.expectedOutcome}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  expectedOutcome: e.target.value,
+                }))
+              }
+            />
 
-<FormField
-  label="Technical Requirements"
-  textarea
-  placeholder="List any mandatory technical requirements"
-  full
-  value={form.technicalRequirements}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      technicalRequirements: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Technical Requirements"
+              textarea
+              placeholder="List any mandatory technical requirements"
+              full
+              value={form.technicalRequirements}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  technicalRequirements: e.target.value,
+                }))
+              }
+            />
           </div>
         )}
         {step === 1 && (
           <div className="form-grid">
             <FormField
-  label="Eligibility Criteria"
-  textarea
-  placeholder="e.g. DPIIT-recognised startup, incorporated in India, min. 1 year operational"
-  full
-  value={form.eligibilityCriteria}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      eligibilityCriteria: e.target.value,
-    }))
-  }
-/>
+              label="Eligibility Criteria"
+              textarea
+              placeholder="e.g. DPIIT-recognised startup, incorporated in India, min. 1 year operational"
+              full
+              value={form.eligibilityCriteria}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  eligibilityCriteria: e.target.value,
+                }))
+              }
+            />
 
-<FormField
-  label="Minimum Team Size"
-  placeholder="e.g. 3"
-  value={form.minimumTeamSize}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      minimumTeamSize: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Minimum Team Size"
+              placeholder="e.g. 3"
+              value={form.minimumTeamSize}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  minimumTeamSize: e.target.value,
+                }))
+              }
+            />
 
-<FormField
-  label="Sector Focus"
-  placeholder="e.g. AgriTech"
-  value={form.sectorFocus}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      sectorFocus: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Sector Focus"
+              placeholder="e.g. AgriTech"
+              value={form.sectorFocus}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  sectorFocus: e.target.value,
+                }))
+              }
+            />
           </div>
         )}
         {step === 2 && (
           <div className="form-grid">
-           <FormField
-  label="Evaluation Criteria"
-  textarea
-  placeholder="Describe evaluation parameters and their relative importance"
-  full
-  value={form.evaluationCriteria}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      evaluationCriteria: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Evaluation Criteria"
+              textarea
+              placeholder="Describe evaluation parameters and their relative importance"
+              full
+              value={form.evaluationCriteria}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  evaluationCriteria: e.target.value,
+                }))
+              }
+            />
 
-<FormField
-  label="Estimated Procurement Value"
-  placeholder="e.g. ₹1.5 Cr - ₹3 Cr"
-  value={form.procurementValue}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      procurementValue: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Estimated Procurement Value"
+              placeholder="e.g. ₹1.5 Cr - ₹3 Cr"
+              value={form.procurementValue}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  procurementValue: e.target.value,
+                }))
+              }
+            />
           </div>
         )}
         {step === 3 && (
           <div className="form-grid">
-         <FormField
-  label="Submission Deadline"
-  type="date"
-  value={form.deadline}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      deadline: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Submission Deadline"
+              type="date"
+              value={form.deadline}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  deadline: e.target.value,
+                }))
+              }
+            />
 
-<FormField
-  label="Pilot Requirements"
-  textarea
-  placeholder="Describe pilot duration, location and monitoring requirements"
-  full
-  value={form.pilotRequirements}
-  onChange={(e) =>
-    setForm((f) => ({
-      ...f,
-      pilotRequirements: e.target.value,
-    }))
-  }
-/>
+            <FormField
+              label="Pilot Requirements"
+              textarea
+              placeholder="Describe pilot duration, location and monitoring requirements"
+              full
+              value={form.pilotRequirements}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  pilotRequirements: e.target.value,
+                }))
+              }
+            />
           </div>
         )}
         {step === 4 && (
-  <div className="review-block">
-    <h3>Review Challenge Details</h3>
+          <div className="review-block">
+            <h3>Review Challenge Details</h3>
 
-    <p>
-      Please review all sections carefully. Once published, this
-      challenge becomes visible to all registered startups on the platform.
-    </p>
+            <p>
+              Please review all sections carefully. Once published, this
+              challenge becomes visible to all registered startups on the platform.
+            </p>
 
-    <ul className="review-list">
-      <li>
-        <strong>Challenge ID:</strong> {challengeCode}
-      </li>
+            <ul className="review-list">
+              <li>
+                <strong>Challenge ID:</strong> {challengeCode}
+              </li>
 
-      <li>
-        <strong>Title:</strong>{" "}
-        {form.title || "(not set)"}
-      </li>
+              <li>
+                <strong>Title:</strong>{" "}
+                {form.title || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Department:</strong>{" "}
-        {form.department ||
-          "Ministry of Agriculture & Farmers Welfare"}
-      </li>
+              <li>
+                <strong>Department:</strong>{" "}
+                {form.department ||
+                  "Ministry of Agriculture & Farmers Welfare"}
+              </li>
 
-      <li>
-        <strong>Problem Statement:</strong>{" "}
-        {form.description || "(not set)"}
-      </li>
+              <li>
+                <strong>Problem Statement:</strong>{" "}
+                {form.description || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Expected Outcome:</strong>{" "}
-        {form.expectedOutcome || "(not set)"}
-      </li>
+              <li>
+                <strong>Expected Outcome:</strong>{" "}
+                {form.expectedOutcome || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Technical Requirements:</strong>{" "}
-        {form.technicalRequirements || "(not set)"}
-      </li>
+              <li>
+                <strong>Technical Requirements:</strong>{" "}
+                {form.technicalRequirements || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Eligibility Criteria:</strong>{" "}
-        {form.eligibilityCriteria || "(not set)"}
-      </li>
+              <li>
+                <strong>Eligibility Criteria:</strong>{" "}
+                {form.eligibilityCriteria || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Minimum Team Size:</strong>{" "}
-        {form.minimumTeamSize || "(not set)"}
-      </li>
+              <li>
+                <strong>Minimum Team Size:</strong>{" "}
+                {form.minimumTeamSize || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Sector Focus:</strong>{" "}
-        {form.sectorFocus || "(not set)"}
-      </li>
+              <li>
+                <strong>Sector Focus:</strong>{" "}
+                {form.sectorFocus || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Evaluation Criteria:</strong>{" "}
-        {form.evaluationCriteria || "(not set)"}
-      </li>
+              <li>
+                <strong>Evaluation Criteria:</strong>{" "}
+                {form.evaluationCriteria || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Estimated Procurement Value:</strong>{" "}
-        {form.procurementValue || "(not set)"}
-      </li>
+              <li>
+                <strong>Estimated Procurement Value:</strong>{" "}
+                {form.procurementValue || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Submission Deadline:</strong>{" "}
-        {form.deadline || "(not set)"}
-      </li>
+              <li>
+                <strong>Submission Deadline:</strong>{" "}
+                {form.deadline || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Pilot Requirements:</strong>{" "}
-        {form.pilotRequirements || "(not set)"}
-      </li>
+              <li>
+                <strong>Pilot Requirements:</strong>{" "}
+                {form.pilotRequirements || "(not set)"}
+              </li>
 
-      <li>
-        <strong>Status:</strong> Ready for publishing
-      </li>
-    </ul>
-  </div>
-)}
+              <li>
+                <strong>Status:</strong> Ready for publishing
+              </li>
+            </ul>
+          </div>
+        )}
         {step === 5 && (
           <div className="review-block">
             {published ? (
@@ -1076,25 +1129,25 @@ const handlePublish = async () => {
             )}
           </div>
         )}
- 
+
         <div className="form-actions">
           <div className="form-actions__left">
             <button className="btn btn--ghost" disabled={step === 0} onClick={prev}>Back</button>
           </div>
           <div className="form-actions__right">
-           <button
-  className="btn btn--outline"
-  disabled={savingDraft}
-  onClick={handleSaveDraft}
->
-  {savingDraft ? "Saving…" : "Save as Draft"}
-</button>
-          <button
-  className="btn btn--outline"
-  onClick={() => setShowPreview(true)}
->
-  Preview
-</button>
+            <button
+              className="btn btn--outline"
+              disabled={savingDraft}
+              onClick={handleSaveDraft}
+            >
+              {savingDraft ? "Saving…" : "Save as Draft"}
+            </button>
+            <button
+              className="btn btn--outline"
+              onClick={() => setShowPreview(true)}
+            >
+              Preview
+            </button>
             {step < STEPS.length - 1 ? (
               <button className="btn btn--primary" onClick={next}>Continue</button>
             ) : (
@@ -1107,82 +1160,82 @@ const handlePublish = async () => {
           </div>
         </div>
       </div>
- {showPreview && (
-  <Modal
-    title="Challenge Preview"
-    onClose={() => setShowPreview(false)}
-    onConfirm={() => setShowPreview(false)}
-    confirmLabel="Close Preview"
-  >
-    <div className="review-block">
-      <ul className="review-list">
-        <li>
-          <strong>Challenge ID:</strong> {challengeCode}
-        </li>
+      {showPreview && (
+        <Modal
+          title="Challenge Preview"
+          onClose={() => setShowPreview(false)}
+          onConfirm={() => setShowPreview(false)}
+          confirmLabel="Close Preview"
+        >
+          <div className="review-block">
+            <ul className="review-list">
+              <li>
+                <strong>Challenge ID:</strong> {challengeCode}
+              </li>
 
-        <li>
-          <strong>Title:</strong> {form.title || "(not set)"}
-        </li>
+              <li>
+                <strong>Title:</strong> {form.title || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Department:</strong>{" "}
-          {form.department ||
-            "Ministry of Agriculture & Farmers Welfare"}
-        </li>
+              <li>
+                <strong>Department:</strong>{" "}
+                {form.department ||
+                  "Ministry of Agriculture & Farmers Welfare"}
+              </li>
 
-        <li>
-          <strong>Problem Statement:</strong>{" "}
-          {form.description || "(not set)"}
-        </li>
+              <li>
+                <strong>Problem Statement:</strong>{" "}
+                {form.description || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Expected Outcome:</strong>{" "}
-          {form.expectedOutcome || "(not set)"}
-        </li>
+              <li>
+                <strong>Expected Outcome:</strong>{" "}
+                {form.expectedOutcome || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Technical Requirements:</strong>{" "}
-          {form.technicalRequirements || "(not set)"}
-        </li>
+              <li>
+                <strong>Technical Requirements:</strong>{" "}
+                {form.technicalRequirements || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Eligibility Criteria:</strong>{" "}
-          {form.eligibilityCriteria || "(not set)"}
-        </li>
+              <li>
+                <strong>Eligibility Criteria:</strong>{" "}
+                {form.eligibilityCriteria || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Minimum Team Size:</strong>{" "}
-          {form.minimumTeamSize || "(not set)"}
-        </li>
+              <li>
+                <strong>Minimum Team Size:</strong>{" "}
+                {form.minimumTeamSize || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Sector Focus:</strong>{" "}
-          {form.sectorFocus || "(not set)"}
-        </li>
+              <li>
+                <strong>Sector Focus:</strong>{" "}
+                {form.sectorFocus || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Evaluation Criteria:</strong>{" "}
-          {form.evaluationCriteria || "(not set)"}
-        </li>
+              <li>
+                <strong>Evaluation Criteria:</strong>{" "}
+                {form.evaluationCriteria || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Estimated Procurement Value:</strong>{" "}
-          {form.procurementValue || "(not set)"}
-        </li>
+              <li>
+                <strong>Estimated Procurement Value:</strong>{" "}
+                {form.procurementValue || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Submission Deadline:</strong>{" "}
-          {form.deadline || "(not set)"}
-        </li>
+              <li>
+                <strong>Submission Deadline:</strong>{" "}
+                {form.deadline || "(not set)"}
+              </li>
 
-        <li>
-          <strong>Pilot Requirements:</strong>{" "}
-          {form.pilotRequirements || "(not set)"}
-        </li>
-      </ul>
-    </div>
-  </Modal>
-)}
+              <li>
+                <strong>Pilot Requirements:</strong>{" "}
+                {form.pilotRequirements || "(not set)"}
+              </li>
+            </ul>
+          </div>
+        </Modal>
+      )}
       {showConfirm && (
         <Modal
           title="Confirm Publication"
@@ -1196,7 +1249,7 @@ const handlePublish = async () => {
     </div>
   );
 }
- 
+
 function FormField({ label, placeholder, textarea, isSelect, options, full, readOnly, type = "text", value, onChange }) {
   const controlled = value !== undefined;
   return (
@@ -1228,67 +1281,83 @@ function FormField({ label, placeholder, textarea, isSelect, options, full, read
     </div>
   );
 }
- 
+
 function StartupPortalPage({ onNavigate, challenges = CHALLENGES, role }) {
   const [applyTarget, setApplyTarget] = useState(null); // challenge object or null
   const [proposal, setProposal] = useState("");
   const [technologyApproach, setTechnologyApproach] = useState("");
-const [expectedImpact, setExpectedImpact] = useState("");
-const [teamDetails, setTeamDetails] = useState("");
-const [estimatedBudget, setEstimatedBudget] = useState("");
-const [pilotPlan, setPilotPlan] = useState("");
+  const [expectedImpact, setExpectedImpact] = useState("");
+  const [teamDetails, setTeamDetails] = useState("");
+  const [estimatedBudget, setEstimatedBudget] = useState("");
+  const [pilotPlan, setPilotPlan] = useState("");
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState("");
   const [appliedIds, setAppliedIds] = useState(new Set());
+  const [applications, setApplications] = useState([]);
   useEffect(() => {
-  api.getApplications()
-    .then((apps) => {
-      setAppliedIds(new Set(apps.map((app) => app.challenge_id)));
-    })
-    .catch((err) => {
-      console.error("Failed to load applications:", err);
-    });
-}, []);
+    api.getApplications()
+      .then((apps) => {
+        setApplications(apps);
+        setAppliedIds(new Set(apps.map((app) => app.challenge_id)));
+      })
+      .catch((err) => {
+        console.error("Failed to load applications:", err);
+      });
+  }, []);
+  const underEvaluationCount = applications.filter(
+    (app) => app.status === "UNDER_REVIEW"
+  ).length;
 
- const openApply = (challenge) => {
-  if (role !== "startup") {
-    onNavigate("startupAuth");
-    return;
-  }
+  const shortlistedCount = applications.filter(
+    (app) => app.status === "SHORTLISTED"
+  ).length;
 
-  setApplyTarget(challenge);
+  const pilotCount = applications.filter(
+    (app) => app.status === "PILOT"
+  ).length;
 
-  setProposal("");
-  setTechnologyApproach("");
-  setExpectedImpact("");
-  setTeamDetails("");
-  setEstimatedBudget("");
-  setPilotPlan("");
+  const procurementCount = applications.filter(
+    (app) => app.status === "PROCUREMENT"
+  ).length;
+  const openApply = (challenge) => {
+    if (role !== "startup") {
+      onNavigate("startupAuth");
+      return;
+    }
 
-  setApplyError("");
-};
- const submitApplication = async () => {
-  setApplying(true);
-  setApplyError("");
+    setApplyTarget(challenge);
 
-  try {
-    await api.applyToChallenge(applyTarget.dbId, {
-      proposal,
-      technology_approach: technologyApproach,
-      expected_impact: expectedImpact,
-      team_details: teamDetails,
-      estimated_budget: estimatedBudget,
-      pilot_plan: pilotPlan,
-    });
+    setProposal("");
+    setTechnologyApproach("");
+    setExpectedImpact("");
+    setTeamDetails("");
+    setEstimatedBudget("");
+    setPilotPlan("");
 
-    setAppliedIds((prev) => new Set(prev).add(applyTarget.dbId));
-    setApplyTarget(null);
-  } catch (err) {
-    setApplyError(err.message || "Could not submit application");
-  } finally {
-    setApplying(false);
-  }
-};
+    setApplyError("");
+  };
+  const submitApplication = async () => {
+    setApplying(true);
+    setApplyError("");
+
+    try {
+      await api.applyToChallenge(applyTarget.dbId, {
+        proposal,
+        technology_approach: technologyApproach,
+        expected_impact: expectedImpact,
+        team_details: teamDetails,
+        estimated_budget: estimatedBudget,
+        pilot_plan: pilotPlan,
+      });
+
+      setAppliedIds((prev) => new Set(prev).add(applyTarget.dbId));
+      setApplyTarget(null);
+    } catch (err) {
+      setApplyError(err.message || "Could not submit application");
+    } finally {
+      setApplying(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -1296,12 +1365,13 @@ const [pilotPlan, setPilotPlan] = useState("");
       <h1 className="page-title">Startup Innovation Portal</h1>
 
       <div className="stat-grid">
+
         <StatCard label="Available Challenges" value={String(challenges.filter((c) => c.status !== "DRAFT").length)} tone="#123B63" />
         <StatCard label="Applications Submitted" value={String(appliedIds.size)} tone="#1B5E9E" />
-        <StatCard label="Under Evaluation" value="—" tone="#E67E22" />
-        <StatCard label="Shortlisted" value="—" tone="#16803C" />
-        <StatCard label="Pilot Stage" value="—" tone="#16803C" />
-        <StatCard label="Procurement Ready" value="—" tone="#123B63" />
+        <StatCard label="Under Evaluation" value={String(underEvaluationCount)} tone="#E67E22" />
+        <StatCard label="Shortlisted" value={String(shortlistedCount)} tone="#16803C" />
+        <StatCard label="Pilot Stage" value={String(pilotCount)} tone="#16803C" />
+        <StatCard label="Procurement Ready" value={String(procurementCount)} tone="#123B63" />
       </div>
 
       <div className="panel">
@@ -1339,89 +1409,89 @@ const [pilotPlan, setPilotPlan] = useState("");
         </div>
       </div>
 
-    {applyTarget && (
-  <Modal
-    title={`Apply — ${applyTarget.title}`}
-    onClose={() => setApplyTarget(null)}
-    onConfirm={submitApplication}
-    confirmLabel={applying ? "Submitting…" : "Submit Application"}
-  >
-    <p className="muted" style={{ marginBottom: 16 }}>
-      Challenge {applyTarget.id} · {applyTarget.department}
-    </p>
+      {applyTarget && (
+        <Modal
+          title={`Apply — ${applyTarget.title}`}
+          onClose={() => setApplyTarget(null)}
+          onConfirm={submitApplication}
+          confirmLabel={applying ? "Submitting…" : "Submit Application"}
+        >
+          <p className="muted" style={{ marginBottom: 16 }}>
+            Challenge {applyTarget.id} · {applyTarget.department}
+          </p>
 
-    <div className="field field--full">
-      <label className="field__label">Solution Proposal</label>
-      <textarea
-        className="field__input field__textarea"
-        placeholder="Describe your proposed solution and how it addresses this challenge..."
-        value={proposal}
-        onChange={(e) => setProposal(e.target.value)}
-        autoFocus
-      />
-    </div>
+          <div className="field field--full">
+            <label className="field__label">Solution Proposal</label>
+            <textarea
+              className="field__input field__textarea"
+              placeholder="Describe your proposed solution and how it addresses this challenge..."
+              value={proposal}
+              onChange={(e) => setProposal(e.target.value)}
+              autoFocus
+            />
+          </div>
 
-    <div className="field field--full">
-      <label className="field__label">Technology & Approach</label>
-      <textarea
-        className="field__input field__textarea"
-        placeholder="Mention your technology stack, architecture and implementation approach..."
-        value={technologyApproach}
-        onChange={(e) => setTechnologyApproach(e.target.value)}
-      />
-    </div>
+          <div className="field field--full">
+            <label className="field__label">Technology & Approach</label>
+            <textarea
+              className="field__input field__textarea"
+              placeholder="Mention your technology stack, architecture and implementation approach..."
+              value={technologyApproach}
+              onChange={(e) => setTechnologyApproach(e.target.value)}
+            />
+          </div>
 
-    <div className="field field--full">
-      <label className="field__label">Expected Impact</label>
-      <textarea
-        className="field__input field__textarea"
-        placeholder="Explain the expected outcomes, benefits and measurable impact..."
-        value={expectedImpact}
-        onChange={(e) => setExpectedImpact(e.target.value)}
-      />
-    </div>
+          <div className="field field--full">
+            <label className="field__label">Expected Impact</label>
+            <textarea
+              className="field__input field__textarea"
+              placeholder="Explain the expected outcomes, benefits and measurable impact..."
+              value={expectedImpact}
+              onChange={(e) => setExpectedImpact(e.target.value)}
+            />
+          </div>
 
-    <div className="field field--full">
-      <label className="field__label">Team Details</label>
-      <textarea
-        className="field__input field__textarea"
-        placeholder="Mention team size, roles and relevant expertise..."
-        value={teamDetails}
-        onChange={(e) => setTeamDetails(e.target.value)}
-      />
-    </div>
+          <div className="field field--full">
+            <label className="field__label">Team Details</label>
+            <textarea
+              className="field__input field__textarea"
+              placeholder="Mention team size, roles and relevant expertise..."
+              value={teamDetails}
+              onChange={(e) => setTeamDetails(e.target.value)}
+            />
+          </div>
 
-    <div className="field field--full">
-      <label className="field__label">Estimated Budget</label>
-      <input
-        className="field__input"
-        type="text"
-        placeholder="Example: ₹5,00,000"
-        value={estimatedBudget}
-        onChange={(e) => setEstimatedBudget(e.target.value)}
-      />
-    </div>
+          <div className="field field--full">
+            <label className="field__label">Estimated Budget</label>
+            <input
+              className="field__input"
+              type="text"
+              placeholder="Example: ₹5,00,000"
+              value={estimatedBudget}
+              onChange={(e) => setEstimatedBudget(e.target.value)}
+            />
+          </div>
 
-    <div className="field field--full">
-      <label className="field__label">Pilot Implementation Plan</label>
-      <textarea
-        className="field__input field__textarea"
-        placeholder="Explain how you would implement and test the solution during the pilot..."
-        value={pilotPlan}
-        onChange={(e) => setPilotPlan(e.target.value)}
-      />
-    </div>
+          <div className="field field--full">
+            <label className="field__label">Pilot Implementation Plan</label>
+            <textarea
+              className="field__input field__textarea"
+              placeholder="Explain how you would implement and test the solution during the pilot..."
+              value={pilotPlan}
+              onChange={(e) => setPilotPlan(e.target.value)}
+            />
+          </div>
 
-    {applyError && (
-      <div
-        className="info-callout info-callout--warn"
-        style={{ marginTop: 10 }}
-      >
-        {applyError}
-      </div>
-    )}
-  </Modal>
-)}
+          {applyError && (
+            <div
+              className="info-callout info-callout--warn"
+              style={{ marginTop: 10 }}
+            >
+              {applyError}
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }
@@ -1440,7 +1510,7 @@ function EligibilityPage() {
       <Breadcrumb items={["Home", "Startup Portal", "Eligibility Check"]} />
       <h1 className="page-title">Eligibility Verification</h1>
       <p className="page-desc">Challenge: <strong>GC-2026-014 — AI-Based Crop Disease Detection for Small Farmers</strong></p>
- 
+
       <div className="panel">
         <div className="panel__header"><h2>Eligibility Criteria</h2></div>
         <ul className="criteria-list">
@@ -1461,7 +1531,7 @@ function EligibilityPage() {
     </div>
   );
 }
- 
+
 const EVAL_RUBRIC = [
   { key: "technical_feasibility", name: "Technical Feasibility", max: 25 },
   { key: "innovation", name: "Innovation", max: 20 },
@@ -1472,7 +1542,7 @@ const EVAL_RUBRIC = [
 ];
 
 /** Government/Evaluator side: pick an application, score it, submit. */
-function EvaluatorDashboardPage() {
+function EvaluatorDashboardPage({ initialApplicationId }) {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -1484,8 +1554,12 @@ function EvaluatorDashboardPage() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    api.getApplications()
-      .then((data) => { setApplications(data); setLoading(false); })
+      api.getApplications()
+  .then((data) => {
+    setApplications(data);
+
+    setLoading(false);
+  })
       .catch((err) => { setLoadError(err.message); setLoading(false); });
   }, []);
 
@@ -1690,76 +1764,734 @@ function MyEvaluationsPage() {
     </div>
   );
 }
- 
-function ShortlistingPage() {
+
+function ShortlistingPage(){
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [selectedEvaluation, setSelectedEvaluation] = useState(null);
+const [evaluationLoading, setEvaluationLoading] = useState({});
+const [evaluationMap, setEvaluationMap] = useState({});
+useEffect(() => {
+  const loadApplications = async () => {
+    try {
+      const apps = await api.getApplications();
+
+      setApplications(apps);
+
+      const evaluationResults = await Promise.all(
+        apps.map(async (app) => {
+          try {
+            const evaluations = await api.getEvaluationsForApplication(app.id);
+            return [app.id, evaluations];
+          } catch (err) {
+            console.error(
+              `Evaluation load failed for application ${app.id}`,
+              err
+            );
+            return [app.id, []];
+          }
+        })
+      );
+
+      setEvaluationMap(Object.fromEntries(evaluationResults));
+    } catch (err) {
+      console.error("Failed to load applications:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadApplications();
+}, []);
   return (
+    
     <div className="page">
       <Breadcrumb items={["Home", "Government Dashboard", "Shortlisting"]} />
       <h1 className="page-title">Transparent Shortlisting</h1>
       <p className="page-desc">Challenge: <strong>GC-2026-014 — AI-Based Crop Disease Detection for Small Farmers</strong></p>
- 
+
       <div className="filter-bar">
         <FormField label="Department" isSelect placeholder="All Departments" options={["Ministry of Agriculture"]} />
         <FormField label="Challenge" isSelect placeholder="GC-2026-014" options={["GC-2026-014"]} />
         <FormField label="Eligibility" isSelect placeholder="All" options={["Eligible", "Not Eligible"]} />
         <FormField label="Status" isSelect placeholder="All" options={["Completed", "In Progress"]} />
       </div>
- 
+
       <div className="panel">
-        <DataTable columns={["Rank", "Startup", "Eligibility", "Technical", "Innovation", "Cost Effectiveness", "Impact", "Total Score", "Evaluation Status", "Decision"]}>
-          {STARTUPS.map((s) => (
-            <tr key={s.rank}>
-              <td>{s.rank}</td>
-              <td>{s.name}</td>
-              <td><StatusBadge status={s.eligibility} /></td>
-              <td>{s.technical}</td>
-              <td>{s.innovation}</td>
-              <td>{s.cost}</td>
-              <td>{s.impact}</td>
-              <td><strong>{s.total}</strong></td>
-              <td>{s.evalStatus}</td>
-              <td>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button className="link-btn">View Application</button>
-                  <button className="link-btn">View Evaluation</button>
-                </div>
+ <DataTable columns={[
+  "Rank",
+  "Startup",
+  "Eligibility",
+  "Technical",
+  "Innovation",
+  "Scalability",
+  "Cost Effectiveness",
+  "Implementation",
+  "Total Score",
+  "Evaluation Status",
+  "Decision"
+]}>
+
+          {loading ? (
+            <tr>
+              <td colSpan="11" style={{ textAlign: "center", padding: "20px" }}>
+                Loading applications...
               </td>
             </tr>
-          ))}
+          ) : applications.length === 0 ? (
+            <tr>
+              <td colSpan="1" style={{ textAlign: "center", padding: "20px" }}>
+                No applications found.
+              </td>
+            </tr>
+          ) : (
+            applications.map((app, index) => (
+              <tr key={app.id}>
+  <td>
+    <strong>#{index + 1}</strong>
+  </td>
+
+  <td>
+    <div style={{ fontWeight: 700 }}>
+      Startup #{app.startup_id}
+    </div>
+    <div className="muted" style={{ fontSize: 12 }}>
+      Application #{app.id}
+    </div>
+  </td><td>
+  <StatusBadge
+    status={
+      app.status === "REJECTED"
+        ? "Not Eligible"
+        : "Eligible"
+    }
+  />
+</td>
+ {(() => {
+  const evaluations = evaluationMap[app.id] || [];
+  const evaluation = evaluations[0];
+
+  return (
+    <>
+      <td>{evaluation?.scores?.technical_feasibility ?? "—"} / 20</td>
+      <td>{evaluation?.scores?.innovation ?? "—"} / 20</td>
+      <td>{evaluation?.scores?.scalability ?? "—"} / 15</td>
+      <td>{evaluation?.scores?.cost_effectiveness ?? "—"} / 15</td>
+      <td>{evaluation?.scores?.implementation_capability ?? "—"} / 15</td>
+      <td>
+        <strong>{evaluation?.total_score ?? "—"} / 100</strong>
+      </td>
+    </>
+  );
+})()}
+                <td>
+  <StatusBadge status={app.status} />
+</td>
+    <td>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      minWidth: 150,
+    }}
+  >
+    <div
+      style={{
+        fontSize: 12,
+        fontWeight: 700,
+        marginBottom: 2,
+      }}
+    >
+      Decision
+    </div>
+
+   {app.status === "SHORTLISTED" ? (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 6,
+    }}
+  >
+    <div
+      style={{
+        padding: "6px 10px",
+        borderRadius: 6,
+        fontSize: 12,
+        fontWeight: 700,
+        background: "#e8f7ee",
+        color: "#18794e",
+        textAlign: "center",
+      }}
+    >
+      ✓ Shortlisted
+    </div>
+
+    <button
+      className="link-btn"
+      onClick={async () => {
+        try {
+          const today = new Date().toISOString().slice(0, 10);
+
+          await api.createPilot({
+            application_id: app.id,
+            milestones: [
+              {
+                label: "Pilot Approved",
+                done: true,
+                date: today,
+              },
+              {
+                label: "Pilot Deployment",
+                done: false,
+                date: null,
+              },
+              {
+                label: "Performance Monitoring",
+                done: false,
+                date: null,
+              },
+              {
+                label: "Pilot Evaluation",
+                done: false,
+                date: null,
+              },
+              {
+                label: "Procurement Recommendation",
+                done: false,
+                date: null,
+              },
+            ],
+            status: "PILOT APPROVED",
+            progress: 20,
+          });
+
+          await api.updateApplication(app.id, {
+            status: "PILOT",
+          });
+
+          setApplications((prev) =>
+            prev.map((item) =>
+              item.id === app.id
+                ? { ...item, status: "PILOT" }
+                : item
+            )
+          );
+
+          alert("Pilot started successfully.");
+        } catch (err) {
+          console.error("Failed to start pilot:", err);
+          alert(err.message || "Failed to start pilot.");
+        }
+      }}
+    >
+      Start Pilot
+    </button>
+  </div>
+    ) : app.status === "REJECTED" ? (
+      <div
+        style={{
+          padding: "6px 10px",
+          borderRadius: 6,
+          fontSize: 12,
+          fontWeight: 700,
+          background: "#fdecec",
+          color: "#b42318",
+          textAlign: "center",
+        }}
+      >
+        ✕ Rejected
+      </div>
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          className="link-btn"
+          onClick={() => setSelectedApplication(app)}
+        >
+          View
+        </button>
+
+        <button
+          className="link-btn"
+          onClick={async () => {
+            try {
+              await api.updateApplication(app.id, {
+                status: "SHORTLISTED",
+              });
+
+              setApplications((prev) =>
+                prev.map((item) =>
+                  item.id === app.id
+                    ? { ...item, status: "SHORTLISTED" }
+                    : item
+                )
+              );
+
+              alert("Application shortlisted successfully.");
+            } catch (err) {
+              console.error("Failed to shortlist:", err);
+              alert("Failed to shortlist application.");
+            }
+          }}
+        >
+          Shortlist
+        </button>
+
+        <button
+          className="link-btn"
+          onClick={async () => {
+            try {
+              await api.updateApplication(app.id, {
+                status: "REJECTED",
+              });
+
+              setApplications((prev) =>
+                prev.map((item) =>
+                  item.id === app.id
+                    ? { ...item, status: "REJECTED" }
+                    : item
+                )
+              );
+
+              alert("Application rejected successfully.");
+            } catch (err) {
+              console.error("Failed to reject:", err);
+              alert("Failed to reject application.");
+            }
+          }}
+        >
+          Reject
+        </button>
+
+        <button
+          className="link-btn"
+          onClick={async () => {
+            setEvaluationLoading(true);
+
+            try {
+              const evaluations =
+                await api.getEvaluationsForApplication(app.id);
+
+              setSelectedEvaluation({
+                application: app,
+                evaluations: evaluations,
+              });
+            } catch (err) {
+              console.error("Failed to load evaluation:", err);
+
+              setSelectedEvaluation({
+                application: app,
+                evaluations: [],
+                error: err.message,
+              });
+            } finally {
+              setEvaluationLoading(false);
+            }
+          }}
+        >
+          Evaluation
+        </button>
+      </div>
+    )}
+  </div>
+</td>
+              </tr>
+            ))
+          )}
+
         </DataTable>
         <div className="info-callout">
           Shortlisting decisions are based on predefined evaluation criteria.
         </div>
       </div>
+      {selectedApplication && (
+        
+        
+  <Modal
+    title={`Application #${selectedApplication.id}`}
+    onClose={() => setSelectedApplication(null)}
+    onConfirm={() => setSelectedApplication(null)}
+    confirmLabel="Close"
+  >
+    <div style={{ display: "grid", gap: 12 }}>
+      <div>
+        <strong>Startup ID:</strong> #{selectedApplication.startup_id}
+      </div>
+
+      <div>
+        <strong>Challenge ID:</strong> #{selectedApplication.challenge_id}
+      </div>
+
+      <div>
+        <strong>Status:</strong> {selectedApplication.status}
+      </div>
+
+      <div>
+        <strong>Team Details:</strong>
+        <p>{selectedApplication.team_details || "Not provided"}</p>
+      </div>
+
+      <div>
+        <strong>Proposal:</strong>
+        <p>{selectedApplication.proposal || "Not provided"}</p>
+      </div>
+
+      <div>
+        <strong>Technology Approach:</strong>
+        <p>{selectedApplication.technology_approach || "Not provided"}</p>
+      </div>
+
+      <div>
+        <strong>Expected Impact:</strong>
+        <p>{selectedApplication.expected_impact || "Not provided"}</p>
+      </div>
+
+      <div>
+        <strong>Estimated Budget:</strong>
+        ₹{selectedApplication.estimated_budget || "Not provided"}
+      </div>
+
+      <div>
+        <strong>Pilot Plan:</strong>
+        <p>{selectedApplication.pilot_plan || "Not provided"}</p>
+      </div>
+    </div>
+  </Modal>
+)}
+{selectedEvaluation && (
+  <Modal
+    title={`Evaluation — Application #${selectedEvaluation.application.id}`}
+    onClose={() => setSelectedEvaluation(null)}
+    onConfirm={() => setSelectedEvaluation(null)}
+    confirmLabel="Close"
+  >
+    {selectedEvaluation.error ? (
+      <div className="info-callout info-callout--warn">
+        Could not load evaluation: {selectedEvaluation.error}
+      </div>
+    ) : !selectedEvaluation.evaluations ||
+      selectedEvaluation.evaluations.length === 0 ? (
+      <div className="info-callout">
+        No evaluation has been submitted for this application yet.
+      </div>
+    ) : (
+      <div style={{ display: "grid", gap: 14 }}>
+        {selectedEvaluation.evaluations.map((evaluation) => (
+          <div key={evaluation.id}>
+
+            <div style={{ marginBottom: 14 }}>
+              <strong>Evaluator ID:</strong> #{evaluation.evaluator_id}
+            </div>
+
+            <DataTable
+              columns={["Parameter", "Score"]}
+            >
+              <tr>
+                <td>Technical Feasibility</td>
+                <td>{evaluation.scores?.technical_feasibility ?? "—"} / 20</td>
+              </tr>
+
+              <tr>
+                <td>Innovation</td>
+                <td>{evaluation.scores?.innovation ?? "—"} / 20</td>
+              </tr>
+
+              <tr>
+                <td>Scalability</td>
+                <td>{evaluation.scores?.scalability ?? "—"} / 15</td>
+              </tr>
+
+              <tr>
+                <td>Cost Effectiveness</td>
+                <td>{evaluation.scores?.cost_effectiveness ?? "—"} / 15</td>
+              </tr>
+
+              <tr>
+                <td>Implementation Capability</td>
+                <td>{evaluation.scores?.implementation_capability ?? "—"} / 15</td>
+              </tr>
+            </DataTable>
+
+            <div className="final-score" style={{ marginTop: 14 }}>
+              <span>Total Score</span>
+              <strong>{evaluation.total_score} / 100</strong>
+            </div>
+
+            <div style={{ marginTop: 14 }}>
+              <strong>Evaluator Remarks:</strong>
+              <p>
+                {evaluation.remarks || "No remarks provided."}
+              </p>
+            </div>
+
+            <div style={{ marginTop: 10 }} className="muted">
+              Evaluated on:{" "}
+              {evaluation.created_at
+                ? new Date(evaluation.created_at).toLocaleDateString()
+                : "—"}
+            </div>
+
+          </div>
+        ))}
+      </div>
+    )}
+  </Modal>
+)}
+
     </div>
   );
 }
- 
+
 const PILOT_STAGES = ["SHORTLISTED", "PILOT APPROVED", "PILOT DEPLOYMENT", "PERFORMANCE MONITORING", "PILOT EVALUATION", "PROCUREMENT RECOMMENDATION"];
- 
+
 function PilotProjectPage() {
-  const activeStage = 3;
+  const [pilots, setPilots] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+useEffect(() => {
+  const loadPilots = async () => {
+    try {
+      const [pilotData, applicationData] = await Promise.all([
+        api.getPilots(),
+        api.getApplications(),
+      ]);
+
+      setPilots(pilotData);
+      setApplications(applicationData);
+    } catch (err) {
+      console.error("Failed to load pilot data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadPilots();
+}, []);
+
+  const [selectedPilot, setSelectedPilot] = useState(null);
+
+const pilot = selectedPilot || pilots[0];
+const movePilotToNextStage = async () => {
+  if (!pilot) return;
+
+  const stages = [
+    {
+      status: "PILOT APPROVED",
+      progress: 20,
+      milestoneIndex: 0,
+    },
+    {
+      status: "PILOT DEPLOYMENT",
+      progress: 40,
+      milestoneIndex: 1,
+    },
+    {
+      status: "PERFORMANCE MONITORING",
+      progress: 60,
+      milestoneIndex: 2,
+    },
+    {
+      status: "PILOT EVALUATION",
+      progress: 80,
+      milestoneIndex: 3,
+    },
+    {
+      status: "PROCUREMENT RECOMMENDATION",
+      progress: 100,
+      milestoneIndex: 4,
+    },
+  ];
+
+  const currentIndex = stages.findIndex(
+    (stage) => stage.status === pilot.status
+  );
+
+  const nextStage = stages[currentIndex + 1];
+
+  if (!nextStage) {
+    alert("Pilot is already at the final stage.");
+    return;
+  }
+
+  const updatedMilestones = pilot.milestones.map((milestone, index) => ({
+    ...milestone,
+    done: index <= nextStage.milestoneIndex,
+  }));
+
+  try {
+    const updatedPilot = await api.updatePilot
+    (pilot.id, {
+      status: nextStage.status,
+      progress: nextStage.progress,
+      milestones: updatedMilestones,
+    });
+    if (nextStage.progress === 100 && pilotApplication) {
+  await api.updateApplication(pilotApplication.id, {
+    status: "PROCUREMENT",
+  });
+}
+
+    setPilots((prev) =>
+      prev.map((item) =>
+        item.id === pilot.id ? updatedPilot : item
+      )
+    );
+
+    setSelectedPilot(updatedPilot);
+
+    alert(`Pilot moved to ${nextStage.status}`);
+  } catch (err) {
+    console.error("Failed to update pilot:", err);
+    alert(err.message || "Failed to update pilot.");
+  }
+};
+const pilotApplication = pilot
+  ? applications.find((app) => app.id === pilot.application_id)
+  : null;
+
+const startupId = pilotApplication?.startup_id;
+
   return (
     <div className="page">
       <Breadcrumb items={["Home", "Pilot Projects"]} />
       <h1 className="page-title">Pilot Project Monitoring</h1>
-      <p className="page-desc">Startup: <strong>AgroSense Technologies Pvt. Ltd.</strong> · Challenge: <span className="mono">GC-2026-005</span></p>
- 
+   <div className="page-desc">
+    {pilots.length > 0 && (
+<div
+  style={{
+    margin: "16px 0 24px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    flexWrap: "wrap",
+  }}
+>
+  <label style={{ fontWeight: 700 }}>
+    Select Pilot:
+  </label>
+
+  <select
+    value={pilot?.id ?? ""}
+    onChange={(e) => {
+      const selected = pilots.find(
+        (p) => p.id === Number(e.target.value)
+      );
+      setSelectedPilot(selected);
+    }}
+    style={{
+      padding: "9px 14px",
+      borderRadius: 6,
+      border: "1px solid #ccc",
+      minWidth: 280,
+      background: "#0f03038e",
+    }}
+  >
+    {pilots.map((p) => (
+      <option key={p.id} value={p.id}>
+        Startup #{applications.find(
+          (app) => app.id === p.application_id
+        )?.startup_id ?? "—"}{" "}
+        — {p.progress}% — {p.status}
+      </option>
+    ))}
+  </select>
+</div>
+)}
+  {pilot
+    ? <>
+     Startup: <strong>Startup #{startupId ?? "—"}</strong>
+        {" · "}
+        Application: <span className="mono">#{pilot.application_id}</span>
+      </>
+    : "Monitor all active pilot projects and their progress"}
+</div >
       <div className="timeline">
-        {PILOT_STAGES.map((stage, i) => (
-          <div key={stage} className={`timeline__item ${i <= activeStage ? "is-done" : ""} ${i === activeStage ? "is-current" : ""}`}>
-            <div className="timeline__dot" />
-            <div className="timeline__label">{stage}</div>
-          </div>
-        ))}
+        {pilots.length > 1 && (
+  <div className="panel" style={{ marginBottom: 20 }}>
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      {pilots.map((p) => (
+        <button
+          key={p.id}
+          className="btn btn--secondary"
+          onClick={() => setSelectedPilot(p)}
+        >
+    Startup #{applications.find((app) => app.id === p.application_id)?.startup_id ?? "—"} — {p.progress}%
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+       {(pilot?.milestones || []).map((milestone, i) => (
+        
+  <div
+    key={milestone.label}
+    className={`timeline__item ${
+      milestone.done ? "is-done" : ""
+    } ${
+      !milestone.done &&
+      i === (pilot?.milestones || []).findIndex((m) => !m.done)
+        ? "is-current"
+        : ""
+    }`}
+  >
+    <div className="timeline__dot" />
+    <div className="timeline__label">
+      {milestone.label}
+    </div>
+  </div>
+))}
       </div>
- 
+
       <div className="panel">
-        <div className="info-grid">
+        <div
+  className="info-grid"
+  style={{
+    gap: 24,
+    marginBottom: 24,
+  }}
+>
           <div><span className="info-grid__label">Pilot Start Date</span><span>01 Jul 2026</span></div>
           <div><span className="info-grid__label">Expected Completion</span><span>30 Sep 2026</span></div>
-          <div><span className="info-grid__label">Deployment Status</span><span><StatusBadge status="PILOT" /></span></div>
-          <div><span className="info-grid__label">Performance Score</span><span><strong>81 / 100</strong></span></div>
+          <div><span className="info-grid__label">Deployment Status</span><span><StatusBadge status={pilot?.status ?? "PILOT"} /></span></div>
+          <div><span className="info-grid__label">Performance Score</span><span><strong>{pilot?.progress ?? 0} / 100</strong></span></div>
+ <div
+  style={{
+    marginTop: 24,
+    paddingTop: 20,
+    borderTop: "1px solid #eee",
+    textAlign: "center",
+  }}
+>
+  {pilot && pilot.progress < 100 && (
+    <button
+      className="btn btn--primary"
+      onClick={movePilotToNextStage}
+    >
+      Move to Next Stage
+    </button>
+  )}
+
+  {pilot && pilot.progress === 100 && (
+    <div
+      style={{
+        padding: "12px",
+        fontWeight: 700,
+        color: "#198754",
+      }}
+    >
+      ✓ Pilot completed — Procurement Recommendation ready
+    </div>
+  )}
+</div>
         </div>
         <div className="feedback-grid">
           <div className="feedback-box">
@@ -1775,8 +2507,52 @@ function PilotProjectPage() {
     </div>
   );
 }
- 
+
 function ProcurementPage() {
+  const [applications, setApplications] = useState([]);
+const [loading, setLoading] = useState(true);
+const [evaluationMap, setEvaluationMap] = useState({});
+
+useEffect(() => {
+  const loadApplications = async () => {
+    try {
+      const data = await api.getApplications();
+
+      const procurementApps = data.filter(
+        (app) =>
+          app.status === "PROCUREMENT" ||
+          app.status === "PILOT"
+      );
+
+      const evaluationResults = await Promise.all(
+        procurementApps.map(async (app) => {
+          try {
+            const evaluations =
+              await api.getEvaluationsForApplication(app.id);
+
+            return [app.id, evaluations];
+          } catch (err) {
+            console.error(
+              `Failed to load evaluation for application ${app.id}`,
+              err
+            );
+
+            return [app.id, []];
+          }
+        })
+      );
+
+      setApplications(data);
+      setEvaluationMap(Object.fromEntries(evaluationResults));
+    } catch (err) {
+      console.error("Failed to load procurement data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadApplications();
+}, []);
   return (
     <div className="page">
       <Breadcrumb items={["Home", "Procurement"]} />
@@ -1786,30 +2562,61 @@ function ProcurementPage() {
       </div>
       <div className="panel">
         <DataTable columns={["Startup", "Solution", "Pilot Status", "Pilot Performance", "Estimated Cost", "Recommendation", "Procurement Status"]}>
-          {PROCUREMENT_ITEMS.map((p) => (
-            <tr key={p.startup}>
-              <td>{p.startup}</td>
-              <td>{p.solution}</td>
-              <td>{p.pilotStatus}</td>
-              <td>{p.performance}</td>
-              <td>{p.cost}</td>
-              <td>{p.recommendation}</td>
-              <td><StatusBadge status={p.status} /></td>
-            </tr>
-          ))}
+  
+         {loading ? (
+  <tr>
+    <td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>
+      Loading procurement data...
+    </td>
+  </tr>
+) : applications.filter(
+    (app) => app.status === "PROCUREMENT" || app.status === "PILOT"
+  ).length === 0 ? (
+  <tr>
+    <td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>
+      No procurement-ready applications found.
+    </td>
+  </tr>
+) : (
+  applications
+    .filter(
+      (app) =>
+        app.status === "PROCUREMENT" ||
+        app.status === "PILOT"
+    )
+    .map((app) => (
+      <tr key={app.id}>
+        <td>Startup #{app.startup_id}</td>
+        <td>{app.proposal}</td>
+        <td>{app.status === "PILOT" ? "Pilot Active" : "Pilot Completed"}</td>
+    <td>
+  {evaluationMap[app.id]?.[0]?.total_score ?? "—"} / 100
+</td>
+        <td>—</td>
+        <td>
+          {app.status === "PROCUREMENT"
+            ? "Recommended"
+            : "Under Evaluation"}
+        </td>
+        <td>
+          <StatusBadge status={app.status} />
+        </td>
+      </tr>
+    ))
+)}
         </DataTable>
       </div>
     </div>
   );
 }
- 
+
 function TransparencyPage() {
   return (
     <div className="page">
       <Breadcrumb items={["Home", "Transparency & Accountability"]} />
       <h1 className="page-title">Transparency &amp; Accountability</h1>
       <p className="page-desc">Every decision on GovInnovate is traceable to a named evaluator, a scoring record, and a dated audit entry.</p>
- 
+
       <div className="panel">
         <div className="info-grid">
           <div><span className="info-grid__label">Evaluation Criteria</span><span>Technical Feasibility, Innovation, Scalability, Cost Effectiveness, Implementation Capability, Government Impact</span></div>
@@ -1819,7 +2626,7 @@ function TransparencyPage() {
           <div><span className="info-grid__label">Decision Reason</span><span>Highest weighted score among eligible applicants; strong field-deployment plan.</span></div>
         </div>
       </div>
- 
+
       <div className="panel">
         <div className="panel__header"><h2>Audit Trail</h2></div>
         <div className="audit-list">
@@ -1837,7 +2644,7 @@ function TransparencyPage() {
     </div>
   );
 }
- 
+
 function GenericInfoPage({ title }) {
   return (
     <div className="page">
@@ -1849,9 +2656,9 @@ function GenericInfoPage({ title }) {
     </div>
   );
 }
- 
+
 /* ---------------- App Shell ---------------- */
- 
+
 export default function App() {
   const [view, setView] = useState("home");
   const [role, setRole] = useState("guest");
@@ -1910,15 +2717,15 @@ export default function App() {
     setRole("guest");
     handleNavigate("home");
   };
- 
+
   const notifications = [
     { text: "Challenge GC-2026-014 has moved to Evaluation stage.", time: "2 hours ago", color: "#1B5E9E" },
     { text: "Your evaluation for KrishiMitra Innovations is due tomorrow.", time: "5 hours ago", color: "#E67E22" },
     { text: "Pilot performance report submitted for GC-2026-005.", time: "1 day ago", color: "#16803C" },
   ];
- 
+
   const fontSizeMap = { "A-": "14px", A: "15.5px", "A+": "17.5px" };
- 
+
   const handleNavigate = (key) => {
     if (key === "startupPortal2") key = "startupPortal";
     setView(key);
@@ -1937,7 +2744,7 @@ export default function App() {
     (GOV_ONLY.has(view) && role !== "government") ||
     (view === EVALUATOR_ROUTE && role !== "evaluator" && role !== "government") ||
     (STARTUP_ONLY.has(view) && role !== "startup");
- 
+
   const pageContent = useMemo(() => {
     if (routeAccessDenied) {
       return (
@@ -1961,9 +2768,10 @@ export default function App() {
       case "createChallenge": return <CreateChallengePage onPublished={refreshChallenges} />;
       case "startupPortal": return <StartupPortalPage onNavigate={handleNavigate} challenges={challenges} role={role} />;
       case "eligibility": return <EligibilityPage />;
-      case "evaluatorDashboard": return <EvaluatorDashboardPage />;
+      case "evaluatorDashboard": return <EvaluatorDashboardPage initialApplicationId />;
       case "myEvaluations": return <MyEvaluationsPage />;
-      case "shortlisting": return <ShortlistingPage />;
+    case "shortlisting":
+ case "shortlisting": return <ShortlistingPage />;
       case "pilotProject": return <PilotProjectPage />;
       case "procurement": return <ProcurementPage />;
       case "transparency": return <TransparencyPage />;
@@ -1974,9 +2782,9 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, challenges, role, routeAccessDenied]);
- 
+
   const showSidebar = role !== "guest" && view !== "govAuth" && view !== "startupAuth";
- 
+
   return (
     <div className="app-root" style={{ fontSize: fontSizeMap[fontScale] }}>
       <style>{`
@@ -2261,14 +3069,374 @@ export default function App() {
           .stats-strip__inner, .stat-grid, .site-footer__inner { grid-template-columns: 1fr; }
           .hero__title { font-size: 24px; }
           .stepper__label { display: none; }
+
+          /* =========================================================
+   GovInnovate — Global UI & Responsive Improvements
+   ========================================================= */
+
+/* Wider desktop layout */
+.layout-with-sidebar {
+  max-width: 1440px;
+  padding: 20px 24px;
+  gap: 20px;
+}
+
+.no-sidebar-main {
+  max-width: 1440px;
+  padding: 20px 24px;
+}
+
+.content-section {
+  max-width: 1440px;
+  padding: 24px 24px 40px;
+}
+
+.utility-bar__inner,
+.site-header__inner,
+.main-nav__inner,
+.site-footer__inner {
+  max-width: 1440px;
+}
+
+/* Main content should use available width */
+.layout-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Better cards/panels */
+.panel {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Tables stay usable on smaller screens */
+.data-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  min-width: 720px;
+}
+
+/* Forms don't become unnecessarily narrow */
+.form-grid {
+  width: 100%;
+}
+
+/* Buttons can wrap instead of overflowing */
+.form-actions,
+.hero__actions {
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   Laptop / Tablet
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .layout-with-sidebar {
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .sidebar {
+    width: 210px;
+  }
+
+  .page-title {
+    font-size: 21px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================================================
+   Tablet
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .layout-with-sidebar {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px;
+    scrollbar-width: thin;
+  }
+
+  .sidebar__item {
+    width: auto;
+    min-width: max-content;
+    white-space: nowrap;
+  }
+
+  .layout-main {
+    width: 100%;
+  }
+
+  .site-header__inner {
+    padding: 12px 18px;
+  }
+
+  .main-nav__inner {
+    padding: 0 16px;
+  }
+
+  .utility-bar__inner {
+    padding: 6px 18px;
+  }
+
+  .content-section,
+  .no-sidebar-main {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .info-grid,
+  .feedback-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .layout-with-sidebar {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .layout-main {
+    width: 100%;
+  }
+
+  .sidebar {
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .sidebar__item {
+    font-size: 12.5px;
+    padding: 8px 10px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    line-height: 1.3;
+    margin-top: 6px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .panel {
+    padding: 13px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+  }
+
+  .form-grid,
+  .info-grid,
+  .feedback-grid,
+  .filter-bar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .content-section,
+  .no-sidebar-main {
+    padding: 16px 10px 28px;
+  }
+
+  .site-header__inner {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .site-header__name {
+    font-size: 18px;
+  }
+
+  .site-header__tagline {
+    font-size: 11px;
+  }
+
+  .site-header__strap {
+    font-size: 10px;
+  }
+
+  .site-header__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .header-icon-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .profile-chip {
+    max-width: 100%;
+  }
+
+  .main-nav__inner {
+    padding: 0 8px;
+  }
+
+  .main-nav__item {
+    padding: 10px 12px;
+    font-size: 12.5px;
+  }
+
+  .utility-bar__inner {
+    padding: 6px 10px;
+  }
+
+  .utility-bar__left,
+  .utility-bar__right {
+    gap: 6px;
+  }
+
+  .hero {
+    padding: 42px 16px 38px;
+  }
+
+  .hero__title {
+    font-size: 24px;
+  }
+
+  .hero__subtitle {
+    font-size: 14px;
+  }
+
+  .hero__chakra {
+    width: 240px;
+    height: 240px;
+    right: -100px;
+  }
+
+  .btn {
+    max-width: 100%;
+  }
+
+  .form-actions {
+    width: 100%;
+  }
+
+  .form-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-box {
+    width: 100%;
+    max-width: 100%;
+    max-height: 94vh;
+  }
+
+  .modal-box__header {
+    padding: 13px 14px;
+  }
+
+  .modal-box__body {
+    padding: 14px;
+  }
+
+  .modal-box__footer {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+  }
+
+  .modal-box__footer .btn {
+    flex: 1 1 auto;
+  }
+
+  .notif-panel {
+    width: min(300px, calc(100vw - 20px));
+    right: -5px;
+  }
+}
+
+/* =========================================================
+   Very Small Phones
+   ========================================================= */
+
+@media (max-width: 420px) {
+  .layout-with-sidebar {
+    padding: 8px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .panel {
+    padding: 11px;
+  }
+
+  .btn {
+    font-size: 12.5px;
+    padding: 8px 13px;
+  }
+
+  .hero {
+    padding: 34px 12px;
+  }
+
+  .hero__title {
+    font-size: 21px;
+  }
+
+  .hero__actions {
+    flex-direction: column;
+  }
+
+  .hero__actions .btn {
+    width: 100%;
+  }
+}
         }
       `}</style>
- 
+
       <div className="tricolor-strip"><span /><span /><span /></div>
       <TopUtilityBar lang={lang} setLang={setLang} fontScale={fontScale} setFontScale={setFontScale} backendStatus={backendStatus} />
       <Header role={role} currentUser={currentUser} onNavigate={handleNavigate} onLogout={handleLogout} notifOpen={notifOpen} setNotifOpen={setNotifOpen} notifications={notifications} />
       <MainNav current={view} onNavigate={handleNavigate} />
- 
+
       <main id="main-content">
         {showSidebar ? (
           <div className="layout-with-sidebar">
@@ -2279,10 +3447,10 @@ export default function App() {
           <div className="no-sidebar-main">{pageContent}</div>
         )}
       </main>
- 
+
       <Footer />
     </div>
   );
 }
- 
+
 

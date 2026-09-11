@@ -160,7 +160,32 @@ export async function submitEvaluation(applicationId, scores, remarks) {
 
 /* ---------------- Pilots ---------------- */
 
-export async function getPilots() {
+export async function getPilots()
+ {
   const res = await fetch(`${API_BASE}/pilots`);
+  return handle(res);
+}
+export async function updatePilot(pilotId, payload) {
+  const res = await fetch(`${API_BASE}/pilots/${pilotId}`, {
+    method: "PATCH",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return handle(res);
+}
+export async function createPilot(payload) {
+  const res = await fetch(`${API_BASE}/pilots`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
   return handle(res);
 }
